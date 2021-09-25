@@ -12,7 +12,9 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 
+import static com.mprog.springsecurityamigo.security.ApplicationUserPermission.COURSE_WRITE;
 import static com.mprog.springsecurityamigo.security.ApplicationUserRole.*;
+import static org.springframework.http.HttpMethod.*;
 
 @Configuration
 @EnableWebSecurity
@@ -31,6 +33,10 @@ public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
                 .authorizeRequests()
                 .antMatchers("/", "index", "/css/*", "/js/*").permitAll()
                 .antMatchers("/api/**").hasRole(STUDENT.name())
+                .antMatchers(DELETE, "/management/api/**").hasAuthority(COURSE_WRITE.name())
+                .antMatchers(POST, "/management/api/**").hasAuthority(COURSE_WRITE.name())
+                .antMatchers(PUT, "/management/api/**").hasAuthority(COURSE_WRITE.name())
+                .antMatchers(GET, "/management/api/**").hasAnyRole(ADMIN.name(), ADMINTRAINEE.name())
                 .anyRequest()
                 .authenticated()
                 .and()
@@ -40,26 +46,29 @@ public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     @Bean
     protected UserDetailsService userDetailsService() {
-        var userMunir = User.builder()
+        var userAnna = User.builder()
                 .username("anna")
                 .password(passwordEncoder.encode("anna"))
-                .roles(STUDENT.name()) //ROLE_STUDENT
+//                .roles(STUDENT.name()) //ROLE_STUDENT
+                .authorities(STUDENT.getGranterAuthorities())
                 .build();
 
         var userLinda = User.builder()
                 .username("linda")
                 .password(passwordEncoder.encode("linda"))
-                .roles(ADMIN.name()) //ROLE_ADMIN
+//                .roles(ADMIN.name()) //ROLE_ADMIN
+                .authorities(ADMIN.getGranterAuthorities())
                 .build();
 
         var userTom = User.builder()
                 .username("tom")
                 .password(passwordEncoder.encode("tom"))
-                .roles(ADMINTRAINEE.name()) //ROLE_ADMINTRAINEE
+//                .roles(ADMINTRAINEE.name()) //ROLE_ADMINTRAINEE
+                .authorities(ADMINTRAINEE.getGranterAuthorities())
                 .build();
 
         return new InMemoryUserDetailsManager(
-                userMunir, userLinda, userTom
+                userAnna, userLinda, userTom
         );
     }
 }
